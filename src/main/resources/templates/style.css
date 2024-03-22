@@ -1,0 +1,65 @@
+* {transition: all .3s ease;}
+/* 已下為愛心編排的CSS */
+.love {
+	width:650px;height:650px;margin:auto;
+	transform:rotate(-45deg);-o-transform:rotate(-45deg);
+    -ms-transform:rotate(-45deg);-moz-transform:rotate(-45deg);
+    -webkit-transform:rotate(-45deg);
+    margin-top:-5%;
+}
+.love a {
+    display:block;width:9.5%;height:9.5%;
+    position:relative;overflow:hidden;margin-right:.5%;margin-bottom:.5%;
+    border-radius:3px;background:#fccbd0;background:#e6616e;vertical-align:top;
+    float:left;
+}
+.love a.adk {background:white;}
+
+.love a:before {content:"";width:120%;height:120%;background:red;position:absolute;z-index:999;opacity:0.5;top:0;left:0;display:none;}
+.love a:after {content:"";width:120%;height:120%;background:black;position:absolute;z-index:99;opacity:0.5;top:0;left:0;display:none;}
+.love a:hover:before ,.love a:hover:after {display:block;}
+
+.love a:nth-child(1) ,.love a:nth-child(n+50) {margin-left:10%;}
+
+.love a:nth-child(3) {margin-right:60%;}
+
+.love a:nth-child(7) ,.love a:nth-child(15) ,
+.love a:nth-child(19) {margin-right:50%;}
+
+.love a:nth-child(8) ,.love a:nth-child(25) ,
+.love a:nth-child(49) {clear:both;}
+
+.love a:nth-child(8) ,.love a:nth-child(10) ,
+.love a:nth-child(14) ,.love a:nth-child(25) ,
+.love a:nth-child(27) ,.love a:nth-child(29) ,
+.love a:nth-child(33) ,.love a:nth-child(35) ,
+.love a:nth-child(39) ,.love a:nth-child(49) ,
+.love a:nth-child(n+50) {margin-top:-10%;}
+
+.love a:nth-child(n+51) {margin-left:40%;}
+.love a:nth-child(n+52) {margin-left:50%;}
+.love a:nth-child(n+53) {margin-left:80%;}
+
+/* 愛心變大 */
+.love a:nth-child(6) ,.love a:nth-child(16) ,
+.love a:nth-child(21) ,.love a:nth-child(24) ,
+.love a:nth-child(43) ,.love a:nth-child(46) {width:19.5%;height:19.5%;}
+
+
+
+.love a img {
+	width:100%;height:100%;
+	transform:rotate(45deg) scale(1.42);;
+	-o-transform:rotate(45deg) scale(1.42);;
+	-ms-transform:rotate(45deg) scale(1.42);;
+	-moz-transform:rotate(45deg) scale(1.42);;
+	-webkit-transform:rotate(45deg) scale(1.42);;
+}
+
+@media (max-width: 1500px) {
+  .love {width:500px;height:500px;}
+}
+
+@media (max-width: 800px) {
+  .love {width:200px;height:200px;
+}
