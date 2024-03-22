@@ -4,9 +4,8 @@ import com.example.steam.service.CurrencyService;
 import com.example.steam.service.impl.CHCServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,18 +22,19 @@ public class StartController {
     private CHCService chcService;
 
     @RequestMapping(value = "start" , method = RequestMethod.GET)
-    public String startProject(){
+    public String startProject(@RequestBody String date){
         while (true){
             if(CHCServiceImpl.hourIdSet.size() == 0){
                 log.info("#######################################################################################################\n##############################\n");
-                gogogo();
+                gogogo(date);
             }
         }
     }
 
-    private void gogogo(){
+    private void gogogo(String dateStr){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        String dateStr = "2023/04/01";
+//        String dateStr = "2024/03/22";
+
         Date startDate;
         try {
             startDate = simpleDateFormat.parse(dateStr);
@@ -45,7 +45,13 @@ public class StartController {
         long time = startDate.getTime();
         //获取某个医生下面的空闲时间
         while(CHCServiceImpl.rankingId == null){
+
             chcService.getDoctorFreeDayTime(time);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         for(int i =0; i<5 ; i++){
@@ -57,7 +63,9 @@ public class StartController {
         while (true){
             if(CHCServiceImpl.hourIdSet.size() > 0){
                 for(String settingId : CHCServiceImpl.hourIdSet){
+                    //修改这里的配置
                     chcService.yuYUE("2996" , "林小碧(儿保)" ,CHCServiceImpl.rankingId, settingId , dateStr);
+//                    chcService.yuYUE("3037" , "黄杰(儿内)" ,CHCServiceImpl.rankingId, settingId , dateStr);
                 }
             }
             try {

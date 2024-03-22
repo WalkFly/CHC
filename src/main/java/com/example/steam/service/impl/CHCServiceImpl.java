@@ -31,6 +31,7 @@ public class CHCServiceImpl implements CHCService {
     public static String rankingId = null;
 
     public static String bookSettingId = null;
+    public static String date = null;
 
     //获取到当天排班日期班次标志位
     public static Set<String> hourIdSet = new HashSet<>();
@@ -39,54 +40,29 @@ public class CHCServiceImpl implements CHCService {
 
 
 
-    //固定的医生列表，可以不用动态获取
-    private Integer[] doctorId = new Integer[]{2996 , 2998, 4265};
 
     //儿童保健
     private Integer ertongbaojian = 11653;
 
+
+
     //儿童心理
-    private Integer xinli = 11654;
+    private Integer neike = 11153;
+
+    private Integer neikeyisheng= 3037;
 
 
 
-    private Header[] headers = HttpHeader.custom().cookie("brandId=10000225; ljhyToken=662e29bc-a05b-4840-a538-70cea20f7da9; " +
-            "SERVERID=412ec2af2c17b9b7a9e56383f9b2c908|1679983699|1679983692").build();
-
-
+    private Header[] headers = HttpHeader.custom().cookie("brandId=10000225; ljhyToken=6a3a811c-54c8-4ee7-9f52-33a0f27018eb").build();
 
 
 
     @Override
-    public void gogogogo() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String dateStr = "2023-03-31";
-        Date startDate;
-        try {
-            startDate = simpleDateFormat.parse(dateStr);
-        } catch (ParseException e) {
-            log.error("转化时间出错，转化的时间原始输入为{}" , dateStr);
-            throw new RuntimeException(e);
-        }
-        long time = startDate.getTime();
-        //获取某个医生下面的空闲时间
-
-        while(CHCServiceImpl.rankingId == null){
-            List<DocFreeDay> doctorFreeDayTime = getDoctorFreeDayTime(time);
-            log.info(JSON.toJSONString(doctorFreeDayTime));
-        }
-
-        List<DocFreeHour> doctorFreeHourTime = getDoctorFreeHourTime(CHCServiceImpl.rankingId);
-        log.info(JSON.toJSONString(doctorFreeHourTime));
-
-        //获取到id后进行预约
-//        yuYUE();
-
-    }
-
-    @Override
+    @Async
     public  List<DocFreeDay> getDoctorFreeDayTime( Long date) {
+        //todo 修改这里的配置
         HttpConfig config = HttpConfig.custom().headers(headers).method(HttpMethods.GET).url(docFreeDayUrlByDocId(2996 , ertongbaojian)).encoding("utf-8");
+//        HttpConfig config = HttpConfig.custom().headers(headers).method(HttpMethods.GET).url(docFreeDayUrlByDocId(neikeyisheng , neike)).encoding("utf-8");
         HttpResult httpResult ;
         try {
             if(CHCServiceImpl.rankingId == null){
@@ -105,15 +81,19 @@ public class CHCServiceImpl implements CHCService {
         //这里获取时间如果获取到则修改
         DocFreeDay vaildDocFreeDay = getVaildDocFreeDay(resultDto.getData(), date);
         if(vaildDocFreeDay != null){
-            log.info("获取到对应日期数据{}" , vaildDocFreeDay.getRankingId());
+            log.info("第一步 获取到日期数据{}" , vaildDocFreeDay.getRankingId());
             CHCServiceImpl.rankingId = vaildDocFreeDay.getRankingId();
             CHCServiceImpl.bookSettingId = vaildDocFreeDay.getBookingSettingId();
+            Date rankingDate = new Date(vaildDocFreeDay.getRankingDate());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
+            String format = simpleDateFormat.format(rankingDate);
+            CHCServiceImpl.date = format;
         }
         return resultDto.getData();
     }
 
     @Override
-    @Async("taskExecutorFR")
+    @Async
     public List<DocFreeHour> getDoctorFreeHourTime(String dayId) {
         String url = getHourTimeUrlByDayId(dayId);
         HttpConfig config = HttpConfig.custom().headers(headers).method(HttpMethods.GET).url(url).encoding("utf-8");
@@ -129,7 +109,7 @@ public class CHCServiceImpl implements CHCService {
             HttpResultDto<DocFreeHour> resultDto = JSON.parseObject(httpResult.getResult() , new TypeReference<HttpResultDto<DocFreeHour>>(){});
             List<DocFreeHour> data = resultDto.getData();
             getVaildDocFreeHour(data);
-            log.info("获取到合法排班班次小时{}" , JSON.toJSONString(CHCServiceImpl.hourIdSet));
+            log.info("第二步 获取到合法排班班次小时{}" , JSON.toJSONString(CHCServiceImpl.hourIdSet));
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -139,34 +119,60 @@ public class CHCServiceImpl implements CHCService {
     }
 
     @Override
-    @Async("taskExecutorSE")
+    @Async
     public void yuYUE(String doctorId , String doctorName , String rankId , String bookingSettingTimeListId , String bookingDate) {
         Map map = new HashMap();
         map.put("brandId" , 10000225);
-        map.put("billId" , "15858513258");
+//        map.put("billId" , "15268760530");
+//        map.put("userId" , 7330373);
+       map.put("billId" , "15268760530");
+        map.put("userId" , 7336380);
         map.put("birthdayDate" , "2021/03/03");
         map.put("privCode" , "330000");
         map.put("cityCode" , "330300");
         map.put("countyCode" , "330302");
         map.put("address" , "1号");
         map.put("idCard" , "");
-        map.put("userId" , 1216875);
+
         map.put("userName" , "蔡弋礼");
         map.put("userSex" , 1);
         map.put("hospitalId" , 10001244);
         map.put("source" , 1);
-        map.put("registeredType" , 1);
-        map.put("timeSlot" , 1);
-        map.put("outpatientTypeId" , 452);
-        map.put("outpatientTypeName" , "儿童健康门诊");
-        map.put("registeredFee" , "0");
-        map.put("describe" , "0");
-        map.put("departId" , 11653);
+        map.put("registeredType" , 2);
+
+
+
+
+
+
+        if(doctorName.equals("林小碧(儿保)")){
+            map.put("timeSlot" , 1);
+            map.put("outpatientTypeId" , 452);
+            map.put("outpatientTypeName" , "儿童健康门诊");
+            map.put("departName" , "儿童保健");
+            map.put("registeredFee" , "0");
+            map.put("describe" , "0");
+            map.put("departId" , 11653);
+        }else{
+            map.put("timeSlot" , 1);
+            map.put("outpatientTypeId" , 451);
+            map.put("outpatientTypeName" , "儿内科门诊");
+            map.put("departName" , "儿童内科");
+            map.put("registeredFee" , "0");
+            map.put("describe" , "0");
+            map.put("departId" , 11153);
+        }
+
+
+
+        /**
+         * 关键信息获取
+         */
 
         map.put("doctorId" , doctorId);
         map.put("doctorName" , doctorName);
         map.put("rankId" , rankId);
-        map.put("bookingDate" , bookingDate);
+        map.put("bookingDate" , CHCServiceImpl.date);
         map.put("bookingSettingTimeListId" , bookingSettingTimeListId);
 
         HttpConfig config = HttpConfig.custom().headers(headers).method(HttpMethods.POST)
@@ -184,12 +190,12 @@ public class CHCServiceImpl implements CHCService {
 
     //获取医生下面时间段地址
     public static String docFreeDayUrlByDocId(Integer docId  , Integer itemId){
-        return "https://m.ruolinzs.com/wechat/user/depart/10001244/"+itemId+"/" + docId + "?startDate=2023%2F03%2F24&endDate=2023%2F09%2F24";
+        return "https://m.ruolinzs.com/wechat/user/depart/10001244/"+itemId+"/" + docId + "?startDate=2024%2F03%2F19&endDate=2030%2F10%2F19";
     }
 
     //获取当天时间段
     public static String getHourTimeUrlByDayId(String dayId){
-        return  "https://m.ruolinzs.com/wechat/user/depart/new/10001244/bookSettingId?bookSettingId="+dayId+"&startDate=2023%2F03%2F24&endDate=2023%2F09%2F24";
+        return  "https://m.ruolinzs.com/wechat/user/depart/new/10001244/bookSettingId?bookSettingId="+dayId+"&startDate=2024%2F03%2F19&endDate=2030%2F10%2F19";
     }
 
     //获取合法的时间日期
@@ -211,7 +217,9 @@ public class CHCServiceImpl implements CHCService {
             return null;
         }
         for(DocFreeHour docFreeHour : docFreeHours){
+            //todo 测试环境下设置为2
             if(docFreeHour.getState() == 1){
+//            if(docFreeHour.getState() == 2){
                 CHCServiceImpl.hourIdSet.add(docFreeHour.getBookingSettingTimeListId());
             }
         }

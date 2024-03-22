@@ -10,7 +10,6 @@ public interface CHCService {
     /**
      * 主线流程
      */
-    void gogogogo();
 
     /**
      * 获取医生下面空余的时间(那天有空)
